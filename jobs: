@@ -1,0 +1,19 @@
+jobs:
+  your-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get UPS OAuth Token
+        id: ups_auth
+        run: |
+          RESPONSE=$(curl -s -X POST "https://onlinetools.ups.com/security/v1/oauth/token" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -u "${{ secrets.UPS_CLIENT_ID }}:${{ secrets.UPS_CLIENT_SECRET }}" \
+            -d "grant_type=client_credentials")
+          
+          TOKEN=$(echo $RESPONSE | jq -r '.access_token')
+          echo "ups_token=$TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Use UPS API
+        run: |
+          curl -H "Authorization: Bearer ${{ steps.ups_auth.outputs.ups_token }}" \
+            https://onlinetools.ups.com/api/...
